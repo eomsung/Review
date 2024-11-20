@@ -9,8 +9,10 @@ function App() {
   const [order, setOrder] = useState("createdAt");
   const [offset, setOffset] = useState(0);
   const [hasNext, setHasNext] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   useEffect(() => {
-    handleLoad({ order, offset, limit: LMIIT });
+    handleLoad({ order, offset: 0, limit: LMIIT });
   }, [order]);
   // 빈배열이 들어가면 컴포넌트를 만들떄 한번만 실행
   //이걸 안쓰고 바로 함수를 실행하면 state가 변경되서 APP()가 무한호출이 됨
@@ -25,14 +27,24 @@ function App() {
     setItems(nextItems);
   };
   const handleLoad = async (options) => {
-    const data = await getReviews(options);
-    if (options.offset === 0) {
-      setItems(data.reviews);
-    } else {
-      setItems([...items, ...data.reviews]);
+    let data;
+    try {
+      setLoading(true);
+      setError(null);
+      data = await getReviews(options);
+      if (options.offset === 0) {
+        setItems(data.reviews);
+      } else {
+        setItems((prev) => [...prev, ...data.reviews]);
+      }
+      setOffset(options.offset + data.reviews.length);
+      setHasNext(data.paging.hasNext);
+    } catch (e) {
+      console.error(e);
+      setError(e);
+    } finally {
+      setLoading(false);
     }
-    setOffset(options.offset + data.reviews.length);
-    setHasNext(data.paging.hasNext);
   };
   const handleLoadMore = async () => {
     handleLoad({ order, offset, limit: LMIIT });
@@ -50,10 +62,14 @@ function App() {
         <button onClick={handleBestClick}>베스트순</button>
       </div>
       <ReviewList items={items} onDelete={handleDelete} />
-      {hasNext && <button onClick={handleLoadMore}>더 보기</button>}
+      {hasNext && (
+        <button disabled={loading} onClick={handleLoadMore}>
+          더 보기
+        </button>
+      )}
+      {error?.message && <span>error.message</span>}
       {/* <button onClick={handleLoadClick}>불러오기</button> */}
     </div>
   );
 }
-
 export default App;
