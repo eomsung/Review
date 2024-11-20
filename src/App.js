@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ReviewList } from "./components/ReviewList";
 import { getReviews } from "./api.js";
-
+import { ReviewForm } from "./components/ReviewForm.js";
 const LMIIT = 6;
 
 function App() {
@@ -61,6 +61,7 @@ function App() {
         <button onClick={handleNewestClick}>최신순</button>
         <button onClick={handleBestClick}>베스트순</button>
       </div>
+      <ReviewForm />
       <ReviewList items={items} onDelete={handleDelete} />
       {hasNext && (
         <button disabled={loading} onClick={handleLoadMore}>
