@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "./ReviewForm.css";
 
 export const ReviewForm = () => {
   const [title, setTitle] = useState("");
@@ -10,7 +11,7 @@ export const ReviewForm = () => {
     setTitle(e.target.value); //바뀐값
   };
   const handleRatingChange = (e) => {
-    setRating(e.target.value) || 0;
+    setRating(e.target.value || 0);
   };
   const handleContentChange = (e) => {
     //e안에 input이 가지고 있는 속성들이 있음
@@ -18,10 +19,10 @@ export const ReviewForm = () => {
   };
 
   return (
-    <form>
+    <form className="ReviewForm">
       <input value={title} onChange={handleTitleChange} />
-      <input type="number" onChange={handleRatingChange} />
-      <textarea onChange={handleContentChange} />
+      <input type="number" value={rating} onChange={handleRatingChange} />
+      <textarea value={content} onChange={handleContentChange} />
     </form>
   );
 };
