@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ReviewList } from "./components/ReviewList";
-import { getReviews } from "./api.js";
+import { createReview, getReviews, updateReview } from "./api.js";
 import { ReviewForm } from "./components/ReviewForm.js";
 const LMIIT = 6;
 
@@ -55,14 +55,32 @@ function App() {
   //   setItems(data.reviews);
   // };
 
+  const handleCreateSuccess = (review) => {
+    setItems((prevItems) => [review, ...prevItems]);
+  };
+
+  const handleUpdateSuccess = (review) => {
+    setItems((prevItems) =>
+      prevItems.map((item) => (items.id === review.id ? review : item))
+    );
+  };
+
   return (
     <div>
       <div>
         <button onClick={handleNewestClick}>최신순</button>
         <button onClick={handleBestClick}>베스트순</button>
       </div>
-      <ReviewForm />
-      <ReviewList items={items} onDelete={handleDelete} />
+      <ReviewForm
+        onSubmitSuccess={handleCreateSuccess}
+        onSubmit={createReview}
+      />
+      <ReviewList
+        items={items}
+        onDelete={handleDelete}
+        onUpdate={updateReview}
+        onUpdateSuccess={handleUpdateSuccess}
+      />
       {hasNext && (
         <button disabled={loading} onClick={handleLoadMore}>
           더 보기
