@@ -18,4 +18,4 @@ locale
 hook  아직 완벽하게 모르겠음 공부 필요함
 
 
-review-gules-eta.vercel.app
+https://review-gules-eta.vercel.app
