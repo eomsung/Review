@@ -1,18 +1,22 @@
-import { useEffect, useState } from "react";
+import { useAsync } from "./hooks/useAsync";
+import { createReview, deleteReview, getReviews, updateReview } from "./api";
+import { ReviewForm } from "./components/ReviewForm";
 import { ReviewList } from "./components/ReviewList";
-import { createReview, getReviews, updateReview } from "./api.js";
-import { ReviewForm } from "./components/ReviewForm.js";
-const LMIIT = 6;
+import { useState, useEffect } from "react";
+import { LocaleProvider } from "./contexts/LocaleContext";
+import { LocaleSelect } from "./components/LocaleSelect";
+const LIMIT = 6;
 
 function App() {
   const [items, setItems] = useState([]);
   const [order, setOrder] = useState("createdAt");
   const [offset, setOffset] = useState(0);
   const [hasNext, setHasNext] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+
+  const [isLoading, loadingError, getReviewsAsync] = useAsync(getReviews);
+
   useEffect(() => {
-    handleLoad({ order, offset: 0, limit: LMIIT });
+    handleLoad({ order, offset: 0, limit: LIMIT });
   }, [order]);
   // 빈배열이 들어가면 컴포넌트를 만들떄 한번만 실행
   //이걸 안쓰고 바로 함수를 실행하면 state가 변경되서 APP()가 무한호출이 됨
@@ -22,32 +26,26 @@ function App() {
   const handleNewestClick = () => setOrder("createdAt");
   const handleBestClick = () => setOrder("rating");
 
-  const handleDelete = (id) => {
-    const nextItems = items.filter((item) => item.id !== id);
-    setItems(nextItems);
+  const handleDelete = async (id) => {
+    await deleteReview(id);
+    // const nextItems = items.filter((item) => item.id !== id);
+    // setItems(nextItems);
+    setItems((prevItems) => prevItems.filter((item) => item.id !== id));
   };
   const handleLoad = async (options) => {
-    let data;
-    try {
-      setLoading(true);
-      setError(null);
-      data = await getReviews(options);
-      if (options.offset === 0) {
-        setItems(data.reviews);
-      } else {
-        setItems((prev) => [...prev, ...data.reviews]);
-      }
-      setOffset(options.offset + data.reviews.length);
-      setHasNext(data.paging.hasNext);
-    } catch (e) {
-      console.error(e);
-      setError(e);
-    } finally {
-      setLoading(false);
+    const data = await getReviewsAsync(options);
+    if (!data) return;
+    if (options.offset === 0) {
+      setItems(data.reviews);
+    } else {
+      setItems((prev) => [...prev, ...data.reviews]);
     }
+    setOffset(options.offset + data.reviews.length);
+    setHasNext(data.paging.hasNext);
   };
+
   const handleLoadMore = async () => {
-    handleLoad({ order, offset, limit: LMIIT });
+    handleLoad({ order, offset, limit: LIMIT });
   };
 
   // const handleLoadClick = async () => {
@@ -61,34 +59,37 @@ function App() {
 
   const handleUpdateSuccess = (review) => {
     setItems((prevItems) =>
-      prevItems.map((item) => (items.id === review.id ? review : item))
+      prevItems.map((item) => (item.id === review.id ? review : item))
     );
   };
 
   return (
-    <div>
+    <LocaleProvider>
       <div>
-        <button onClick={handleNewestClick}>최신순</button>
-        <button onClick={handleBestClick}>베스트순</button>
+        <LocaleSelect />
+        <div>
+          <button onClick={handleNewestClick}>최신순</button>
+          <button onClick={handleBestClick}>베스트순</button>
+        </div>
+        <ReviewForm
+          onSubmitSuccess={handleCreateSuccess}
+          onSubmit={createReview}
+        />
+        <ReviewList
+          items={items}
+          onDelete={handleDelete}
+          onUpdate={updateReview}
+          onUpdateSuccess={handleUpdateSuccess}
+        />
+        {hasNext && (
+          <button disabled={isLoading} onClick={handleLoadMore}>
+            더 보기
+          </button>
+        )}
+        {loadingError?.message && <span>loadingError.message</span>}
+        {/* <button onClick={handleLoadClick}>불러오기</button> */}
       </div>
-      <ReviewForm
-        onSubmitSuccess={handleCreateSuccess}
-        onSubmit={createReview}
-      />
-      <ReviewList
-        items={items}
-        onDelete={handleDelete}
-        onUpdate={updateReview}
-        onUpdateSuccess={handleUpdateSuccess}
-      />
-      {hasNext && (
-        <button disabled={loading} onClick={handleLoadMore}>
-          더 보기
-        </button>
-      )}
-      {error?.message && <span>error.message</span>}
-      {/* <button onClick={handleLoadClick}>불러오기</button> */}
-    </div>
+    </LocaleProvider>
   );
 }
 export default App;

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Rating } from "./Rating";
 import "./ReviewList.css";
 import { ReviewForm } from "./ReviewForm";
+import { useTranslate } from "../hooks/useTranslate";
 
 export const ReviewList = ({ items, onDelete, onUpdate, onUpdateSuccess }) => {
   const [editingId, setEditingId] = useState(null);
@@ -54,6 +55,7 @@ const formatDate = (value) => {
 };
 
 const ReviewListItem = ({ item, onDelete, onEdit }) => {
+  const t = useTranslate();
   const handleEditClick = () => {
     onEdit(item.id);
   };
@@ -66,13 +68,13 @@ const ReviewListItem = ({ item, onDelete, onEdit }) => {
         <Rating value={item.rating} />
         <p>{formatDate(item.createdAt)}</p>
         <p>{item.content}</p>
-        <button onClick={handleEditClick}>수정</button>
+        <button onClick={handleEditClick}>{t("edit")}</button>
         <button
           onClick={() => {
             onDelete(item.id);
           }}
         >
-          삭제
+          {t("delete")}
         </button>
       </div>
     </div>

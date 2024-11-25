@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./ReviewForm.css";
 import { FileInput } from "./FileInput.js";
 import { RatingInput } from "./RatingInput.js";
+import { useAsync } from "../hooks/useAsync.js";
 
 const INITIAL_VALUES = {
   title: "",
@@ -17,9 +18,10 @@ export const ReviewForm = ({
   onSubmit,
   onCancel,
 }) => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [values, setValues] = useState(initialValues);
+
+  const [loading, error, onSubmitAsync] = useAsync(onSubmit);
+
   const handleChange = (name, value) => {
     setValues((prevValues) => ({
       ...prevValues,
@@ -41,17 +43,9 @@ export const ReviewForm = ({
     formData.append("content", values.content);
     formData.append("imgFile", values.imgFile);
     // Object.entries이용하면 긴단하게 가능
-    try {
-      setLoading(true);
-      setError(null);
-      const result = await onSubmit(formData);
-      onSubmitSuccess(result.review);
-      resetValues();
-    } catch (e) {
-      setError(e);
-    } finally {
-      setLoading(false);
-    }
+    const result = await onSubmitAsync(formData);
+    onSubmitSuccess(result.review);
+    resetValues();
   };
 
   const resetValues = () => {
