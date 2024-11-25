@@ -11,3 +11,8 @@ useEffect
 [v]edit 만들기
 [v]데이터 추가 만들기
 [v]별점 구현 만들기
+
+
+contexts
+locale
+hook  아직 완벽하게 모르겠음 공부 필요함
